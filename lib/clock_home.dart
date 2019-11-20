@@ -78,39 +78,6 @@ class ClockHome extends StatelessWidget {
                           second: _clockProvider.second),
                     ),
                   ),
-
-                  ///for big dots or hour
-                  // Positioned(
-                  //   top: percent(screenHeight, 7),
-                  //   left: percent(screenHeight, 7),
-                  //   right: percent(screenHeight, 7),
-                  //   bottom: percent(screenHeight, 7),
-                  //   child: Column(
-                  //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  //     children: <Widget>[
-                  //       Row(
-                  //         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  //         children: bigDots,
-                  //       ),
-                  //       Row(
-                  //         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  //         children: <Widget>[bigDot, bigDot],
-                  //       ),
-                  //       Row(
-                  //         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  //         children: <Widget>[bigDot, bigDot],
-                  //       ),
-                  //       Row(
-                  //         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  //         children: <Widget>[bigDot, bigDot],
-                  //       ),
-                  //       Row(
-                  //         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  //         children: bigDots,
-                  //       ),
-                  //     ],
-                  //   ),
-                  // )
                 ],
               ),
             ),
