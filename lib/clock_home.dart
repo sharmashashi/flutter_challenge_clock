@@ -181,6 +181,38 @@ class ClockPainter extends CustomPainter {
       clockProvider.setMinutesCoordinate = secondCoordinates;
     });
 
+    ///end coordinates of second,minute and hour
+    ///which is shorter than full offset to points.
+    ///fount out by using section formula with ratio
+    ///m:1=3:1
+    double m1 = 5, m2 = 7;
+
+    ///for hour
+    Offset hourEndCoordinate = Offset(
+        (m1 * analogHourCoordinate.dx + m2 * size.width / 2) / (m1 + m2),
+        (m1 * analogHourCoordinate.dy + m2 * size.height / 2) / (m1 + m2));
+
+    ///for minute
+    m1 = 5;
+    m2 = 2;
+    Offset minuteEndCoordinate = Offset(
+        (m1 * clockProvider.minutesCoordinate[minute].dx +
+                m2 * size.width / 2) /
+            (m1 + m2),
+        (m1 * clockProvider.minutesCoordinate[minute].dy +
+                m2 * size.height / 2) /
+            (m1 + m2));
+
+    ///for second
+    m1 = 5;
+    m2 = 1;
+Offset secondEndCoordinate = Offset(
+        (m1 * clockProvider.secondsCoordinate[second].dx +
+                m2 * size.width / 2) /
+            (m1 + m2),
+        (m1 * clockProvider.secondsCoordinate[second].dy +
+                m2 * size.height / 2) /
+            (m1 + m2));
     ///paint  second dots
     Paint secondDotsPaint = Paint()..color = Colors.blue[900];
     for (int i = 0; i < 60; i++) {
@@ -197,18 +229,18 @@ class ClockPainter extends CustomPainter {
 
     ///second
     Paint secondPaint = Paint()..color = Colors.red;
-    canvas.drawLine(clockProvider.secondsCoordinate[second],
+    canvas.drawLine(secondEndCoordinate,
         Offset(size.width / 2, size.height / 2), secondPaint);
 
     ///minute
     Paint minutePaint = Paint()..color = Colors.blue;
-    canvas.drawLine(clockProvider.minutesCoordinate[minute],
+    canvas.drawLine(minuteEndCoordinate,
         Offset(size.width / 2, size.height / 2), minutePaint);
 
     ///hour
     Paint hourPaint = Paint()..color = Colors.black;
-    canvas.drawLine(analogHourCoordinate,
-        Offset(size.width / 2, size.height / 2), hourPaint);
+    canvas.drawLine(
+        hourEndCoordinate, Offset(size.width / 2, size.height / 2), hourPaint);
 
     ///center of clock
     for (double i = 0; i <= 10; i = i + 1) {
