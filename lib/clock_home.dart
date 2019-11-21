@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_challenge_clock/clock_provider.dart';
@@ -13,31 +14,9 @@ class ClockHome extends StatelessWidget {
     Colors.black54
   ];
 
-  Widget bigDot = Container(
-    height: 20,
-    width: 20,
-    decoration:
-        BoxDecoration(color: Colors.deepPurple[900], shape: BoxShape.circle),
-  );
-  Widget smallDot = Container(
-    height: 10,
-    width: 10,
-    decoration:
-        BoxDecoration(color: Colors.deepPurple[900], shape: BoxShape.circle),
-  );
-  double screenHeight, screenWidth;
-
-  List<Widget> bigDots = [];
-  List<Widget> horizontalSmallDots = [];
-  List<Widget> verticalSmallDots = [];
-
   @override
   Widget build(BuildContext context) {
-    bigDots.clear();
-    for (int i = 0; i < 3; i++) {
-      bigDots.add(bigDot);
-    }
-
+    double screenHeight, screenWidth;
     screenHeight = MediaQuery.of(context).size.height;
     screenWidth = MediaQuery.of(context).size.width;
     return ChangeNotifierProvider(
@@ -99,7 +78,7 @@ class ClockPainter extends CustomPainter {
     ///for rectangular border on 4 side of clock
     for (double i = 0; i <= 20; i = i + 0.1) {
       Paint borderLinePaint = Paint()
-        ..color = Color.fromRGBO(0, 0, 0, i > 0.5 ? i / (35 - i) : 1);
+        ..color = Color.fromRGBO(47, 47, 49, i > 0.5 ? i / (35 - i) : 1);
 
       canvas.drawLine(
           Offset(i, i), Offset(i, size.height - i), borderLinePaint);
@@ -206,46 +185,92 @@ class ClockPainter extends CustomPainter {
     ///for second
     m1 = 5;
     m2 = 1;
-Offset secondEndCoordinate = Offset(
+    Offset secondEndCoordinate = Offset(
         (m1 * clockProvider.secondsCoordinate[second].dx +
                 m2 * size.width / 2) /
             (m1 + m2),
         (m1 * clockProvider.secondsCoordinate[second].dy +
                 m2 * size.height / 2) /
             (m1 + m2));
+
     ///paint  second dots
-    Paint secondDotsPaint = Paint()..color = Colors.blue[900];
+    List<Offset> secondTowardCenterCoordinate = List(60);
+    Paint secondDotsPaint = Paint()
+      ..color = Color.fromRGBO(15, 157, 88, 1)
+      ..strokeCap = StrokeCap.round
+      ..strokeWidth = 3;
+    m1 = 1;
+    m2 = 25;
     for (int i = 0; i < 60; i++) {
-      Rect rect = Rect.fromCircle(center: secondCoordinates[i], radius: 3);
-      canvas.drawArc(rect, 0, 2 * pi, true, secondDotsPaint);
+      // Rect rect = Rect.fromCircle(center: secondCoordinates[i], radius: 3);
+      // canvas.drawArc(rect, 0, 2 * pi, true, secondDotsPaint);
+      secondTowardCenterCoordinate[i] = Offset(
+          (m1 * size.width / 2 + m2 * secondCoordinates[i].dx) / (m1 + m2),
+          (m1 * size.height / 2 + m2 * secondCoordinates[i].dy) / (m1 + m2));
+      canvas.drawLine(secondCoordinates[i], secondTowardCenterCoordinate[i],
+          secondDotsPaint);
     }
+
+    canvas.drawCircle(secondTowardCenterCoordinate[second], 2.5,
+        Paint()..color = Color.fromRGBO(219, 68, 55, 1));
+    canvas.drawCircle(secondTowardCenterCoordinate[minute], 3,
+        Paint()..color = Color.fromRGBO(15, 157, 88, 1));
 
     ///paint hour dots
-    Paint hourDotsPaint = Paint()..color = Colors.deepPurple;
+    List<Offset> hourTowardCenterCoordinate = List(13);
+    Paint hourDotsPaint = Paint()
+      ..color = Color.fromRGBO(244, 160, 0, 1)
+      ..strokeCap = StrokeCap.round
+      ..strokeWidth = 6;
+    m1 = 1;
+    m2 = 14;
     for (int i = 1; i <= 12; i++) {
-      Rect rect = Rect.fromCircle(center: hourCoordinates[i], radius: 7);
-      canvas.drawArc(rect, 0, 2 * pi, true, hourDotsPaint);
+      // Rect rect = Rect.fromCircle(center: hourCoordinates[i], radius: 7);
+      // canvas.drawArc(rect, 0, 2 * pi, true, hourDotsPaint);
+      hourTowardCenterCoordinate[i] = Offset(
+          (m1 * size.width / 2 + m2 * hourCoordinates[i].dx) / (m1 + m2),
+          (m1 * size.height / 2 + m2 * hourCoordinates[i].dy) / (m1 + m2));
+      canvas.drawLine(
+          hourCoordinates[i], hourTowardCenterCoordinate[i], hourDotsPaint);
     }
+    canvas.drawCircle(hourTowardCenterCoordinate[hour], 4.5,
+        Paint()..color = Color.fromRGBO(244, 160, 0, 1));
 
-    ///second
-    Paint secondPaint = Paint()..color = Colors.red;
-    canvas.drawLine(secondEndCoordinate,
-        Offset(size.width / 2, size.height / 2), secondPaint);
+    ///hour
+    Paint hourPaint = Paint()
+      ..color = Color.fromRGBO(244, 160, 0, 1)
+      ..strokeWidth = 6
+      ..strokeCap = StrokeCap.round
+      ..isAntiAlias = true
+      ..style = PaintingStyle.fill;
+    canvas.drawLine(
+        hourEndCoordinate, Offset(size.width / 2, size.height / 2), hourPaint);
 
     ///minute
-    Paint minutePaint = Paint()..color = Colors.blue;
+    Paint minutePaint = Paint()
+      ..color = Color.fromRGBO(15, 157, 88, 1)
+      ..strokeWidth = 5
+      ..strokeCap = StrokeCap.round
+      ..isAntiAlias = true
+      ..style = PaintingStyle.fill;
     canvas.drawLine(minuteEndCoordinate,
         Offset(size.width / 2, size.height / 2), minutePaint);
 
-    ///hour
-    Paint hourPaint = Paint()..color = Colors.black;
-    canvas.drawLine(
-        hourEndCoordinate, Offset(size.width / 2, size.height / 2), hourPaint);
+    ///second
+    Paint secondPaint = Paint()
+      ..color = Color.fromRGBO(219, 68, 55, 1)
+      ..strokeWidth = 4
+      ..strokeCap = StrokeCap.round
+      ..isAntiAlias = true
+      ..style = PaintingStyle.fill;
+
+    canvas.drawLine(secondEndCoordinate,
+        Offset(size.width / 2, size.height / 2), secondPaint);
 
     ///center of clock
     for (double i = 0; i <= 10; i = i + 1) {
       Paint centerClockPaint = Paint()
-        ..color = Color.fromRGBO(0, 0, 0, i * i * i);
+        ..color = Color.fromRGBO(219, 68, 55, i * i * i);
       Rect centerRect = Rect.fromCircle(
           center: Offset(size.width / 2, size.height / 2), radius: i + 3);
       canvas.drawArc(centerRect, 0, 2 * pi, true, centerClockPaint);
