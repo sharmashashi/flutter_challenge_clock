@@ -3,5 +3,5 @@ import 'package:flutter_challenge_clock/clock_home.dart';
 
 void main() {
   
-  runApp(MaterialApp(home: ClockHome()));
+  runApp(MaterialApp(home: ClockHome(),debugShowCheckedModeBanner: false,));
 }

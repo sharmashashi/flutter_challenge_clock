@@ -19,62 +19,75 @@ class ClockHome extends StatelessWidget {
     double screenHeight, screenWidth;
     screenHeight = MediaQuery.of(context).size.height;
     screenWidth = MediaQuery.of(context).size.width;
-    return ChangeNotifierProvider(
-      builder: (context) => ClockProvider(),
-      child: Builder(builder: (BuildContext context) {
-        ClockProvider _clockProvider = Provider.of<ClockProvider>(context);
-        Future.delayed(Duration(seconds: 1)).then((_) {
-          _clockProvider.setSecond = DateTime.now().second;
-          _clockProvider.setMinute = DateTime.now().minute;
-          int hour = DateTime.now().hour;
-          if (hour > 12)
-            hour = hour - 12;
-          else if (hour == 0) hour = 12;
-          _clockProvider.setHour = hour;
-        });
 
-        return Scaffold(
-          appBar: PreferredSize(
-            preferredSize: Size.zero,
-            child: Container(),
-          ),
-          backgroundColor: Colors.white,
-          body: Center(
-            child: AspectRatio(
-              aspectRatio: 5 / 3,
-              child: Stack(
-                children: <Widget>[
-                  ///custom paint
-                  Container(
-                    height: screenHeight,
-                    width: screenWidth,
-                    child: CustomPaint(
+    return Scaffold(
+      appBar: PreferredSize(
+        preferredSize: Size.zero,
+        child: Container(),
+      ),
+      backgroundColor: Colors.white,
+      body: Center(
+        child: AspectRatio(
+          aspectRatio: 5 / 3,
+          child: Stack(
+            children: <Widget>[
+              ///custom paint
+              Container(
+                height: screenHeight,
+                width: screenWidth,
+                child: ChangeNotifierProvider<ClockProvider>(
+                  builder: (context) => ClockProvider(),
+                  child: Builder(builder: (BuildContext context) {
+                    ClockProvider _clockProvider =
+                        Provider.of<ClockProvider>(context);
+                    Future.delayed(Duration(seconds: 1)).then((_) {
+                      _clockProvider.setSecond = DateTime.now().second;
+                      _clockProvider.setMinute = DateTime.now().minute;
+                      int hour = DateTime.now().hour;
+                      if (hour > 12)
+                        hour = hour - 12;
+                      else if (hour == 0) hour = 12;
+                      _clockProvider.setHour = hour;
+                    });
+
+                    return CustomPaint(
                       // size: MediaQuery.of(context).size,
                       painter: ClockPainter(
                           clockProvider: _clockProvider,
                           hour: _clockProvider.hour,
                           minute: _clockProvider.minute,
                           second: _clockProvider.second),
-                    ),
-                  ),
-                ],
+                    );
+                  }),
+                ),
               ),
-            ),
+            ],
           ),
-        );
-      }),
+        ),
+      ),
     );
   }
 }
 
 class ClockPainter extends CustomPainter {
-  final clockProvider;
+  final ClockProvider clockProvider;
 
   int hour, minute, second;
   ClockPainter({this.hour, this.minute, this.second, this.clockProvider});
 
   @override
-  void paint(Canvas canvas, Size size) {
+  Future<void> paint(Canvas canvas, Size size) async {
+    ///to calculate coordinates for hour
+    List<Offset> hourCoordinates = List(13);
+
+    ///analog coordinates of hours in each minute
+    Offset analogHourCoordinate;
+
+    analogHourCoordinate = Offset(30, 30);
+
+    ///to calculate coordinate for seconds
+    List<Offset> secondCoordinates = List(60);
+
     ///for rectangular border on 4 side of clock
     for (double i = 0; i <= 20; i = i + 0.1) {
       Paint borderLinePaint = Paint()
@@ -88,9 +101,6 @@ class ClockPainter extends CustomPainter {
       canvas.drawLine(Offset(i, size.height - i),
           Offset(size.width - i, size.height - i), borderLinePaint);
     }
-
-    ///to calculate coordinates for hour
-    List<Offset> hourCoordinates = List(13);
 
     for (int i = 1; i <= 12; i++) {
       if (i > 9) {
@@ -112,14 +122,10 @@ class ClockPainter extends CustomPainter {
         hourCoordinates[i] = Offset(size.width - 30, size.height / 2);
       }
     }
-    Future.delayed(Duration(milliseconds: 500)).then((_) {
+
+    Future.delayed(Duration(milliseconds: 0)).then((_) {
       clockProvider.setHoursCoordinate = hourCoordinates;
     });
-
-    ///analog coordinates of hours in each minute
-    Offset analogHourCoordinate;
-
-    analogHourCoordinate = Offset(30, 30);
 
     if (hour >= 10 || hour == 1) {
       analogHourCoordinate = clockProvider.hoursCoordinate[hour] +
@@ -131,12 +137,11 @@ class ClockPainter extends CustomPainter {
       analogHourCoordinate = clockProvider.hoursCoordinate[hour] -
           Offset(0, minute * (size.height - 60) / 120);
     } else if (hour >= 2 && hour < 4) {
-      analogHourCoordinate = clockProvider.hoursCoordinate[hour] +
-          Offset(0, minute * (size.height - 60) / 120);
+      if (clockProvider.hoursCoordinate[hour] != null)
+        analogHourCoordinate = clockProvider.hoursCoordinate[hour] +
+            Offset(0, minute * (size.height - 60) / 120);
     }
 
-    ///to calculate coordinate for seconds
-    List<Offset> secondCoordinates = List(60);
     for (int i = 0; i < 60; i++) {
       if (i >= 50) {
         secondCoordinates[i] =
@@ -155,7 +160,7 @@ class ClockPainter extends CustomPainter {
             Offset(30, 30 + (50 - i) * (size.height - 60) / 10);
       }
     }
-    Future.delayed(Duration(milliseconds: 500)).then((_) {
+    Future.delayed(Duration(milliseconds: 0)).then((_) {
       clockProvider.setSecondsCoordinate = secondCoordinates;
       clockProvider.setMinutesCoordinate = secondCoordinates;
     });
@@ -174,24 +179,29 @@ class ClockPainter extends CustomPainter {
     ///for minute
     m1 = 5;
     m2 = 2;
-    Offset minuteEndCoordinate = Offset(
-        (m1 * clockProvider.minutesCoordinate[minute].dx +
-                m2 * size.width / 2) /
-            (m1 + m2),
-        (m1 * clockProvider.minutesCoordinate[minute].dy +
-                m2 * size.height / 2) /
-            (m1 + m2));
+
+    Offset minuteEndCoordinate;
+    if (clockProvider.minutesCoordinate[minute] != null)
+      minuteEndCoordinate = Offset(
+          (m1 * clockProvider.minutesCoordinate[minute].dx +
+                  m2 * size.width / 2) /
+              (m1 + m2),
+          (m1 * clockProvider.minutesCoordinate[minute].dy +
+                  m2 * size.height / 2) /
+              (m1 + m2));
 
     ///for second
     m1 = 5;
     m2 = 1;
-    Offset secondEndCoordinate = Offset(
-        (m1 * clockProvider.secondsCoordinate[second].dx +
-                m2 * size.width / 2) /
-            (m1 + m2),
-        (m1 * clockProvider.secondsCoordinate[second].dy +
-                m2 * size.height / 2) /
-            (m1 + m2));
+    Offset secondEndCoordinate;
+    if (clockProvider.secondsCoordinate[second] != null)
+      secondEndCoordinate = Offset(
+          (m1 * clockProvider.secondsCoordinate[second].dx +
+                  m2 * size.width / 2) /
+              (m1 + m2),
+          (m1 * clockProvider.secondsCoordinate[second].dy +
+                  m2 * size.height / 2) /
+              (m1 + m2));
 
     ///paint  second dots
     List<Offset> secondTowardCenterCoordinate = List(60);
@@ -253,8 +263,9 @@ class ClockPainter extends CustomPainter {
       ..strokeCap = StrokeCap.round
       ..isAntiAlias = true
       ..style = PaintingStyle.fill;
-    canvas.drawLine(minuteEndCoordinate,
-        Offset(size.width / 2, size.height / 2), minutePaint);
+    if (minuteEndCoordinate != null)
+      canvas.drawLine(minuteEndCoordinate,
+          Offset(size.width / 2, size.height / 2), minutePaint);
 
     ///second
     Paint secondPaint = Paint()
@@ -263,9 +274,9 @@ class ClockPainter extends CustomPainter {
       ..strokeCap = StrokeCap.round
       ..isAntiAlias = true
       ..style = PaintingStyle.fill;
-
-    canvas.drawLine(secondEndCoordinate,
-        Offset(size.width / 2, size.height / 2), secondPaint);
+    if (secondEndCoordinate != null)
+      canvas.drawLine(secondEndCoordinate,
+          Offset(size.width / 2, size.height / 2), secondPaint);
 
     ///center of clock
     for (double i = 0; i <= 10; i = i + 1) {

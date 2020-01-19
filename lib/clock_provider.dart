@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
 
 class ClockProvider with ChangeNotifier {
-  int _hour = DateTime.now().hour;
+  int _hour = 3;
   int _minute = DateTime.now().minute;
   int _second = DateTime.now().second;
 
+  bool _hasInit = false;
+
   ///coordinates for seconds minutes and hours
-  List<Offset> _secondsCoordinate = List(60);
-  List<Offset> _minutesCoordinate = List(60);
-  List<Offset> _hoursCoordinate = List(12);
+  List<Offset> _secondsCoordinate = List<Offset>(60);
+  List<Offset> _minutesCoordinate = List<Offset>(60);
+  List<Offset> _hoursCoordinate = List<Offset>(12);
 
   get hour => _hour;
   get minute => _minute;
@@ -18,6 +20,12 @@ class ClockProvider with ChangeNotifier {
   get secondsCoordinate => _secondsCoordinate;
   get minutesCoordinate => _minutesCoordinate;
   get hoursCoordinate => _hoursCoordinate;
+
+  get hasInit => _hasInit;
+  set setHasInit(bool value) {
+    this._hasInit = value;
+    notifyListeners();
+  }
 
   set setHour(int hour) {
     this._hour = hour;
