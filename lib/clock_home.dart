@@ -1,6 +1,4 @@
 import 'dart:math';
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_challenge_clock/clock_provider.dart';
 import 'package:provider/provider.dart';
@@ -31,12 +29,19 @@ class ClockHome extends StatelessWidget {
           aspectRatio: 5 / 3,
           child: Stack(
             children: <Widget>[
+
+              Positioned.fill(
+                child: CustomPaint(
+                  painter: FramePainter(),
+                ),
+              ),
+
               ///custom paint
               Container(
                 height: screenHeight,
                 width: screenWidth,
                 child: ChangeNotifierProvider<ClockProvider>(
-                  builder: (context) => ClockProvider(),
+                  create: (context) => ClockProvider(),
                   child: Builder(builder: (BuildContext context) {
                     ClockProvider _clockProvider =
                         Provider.of<ClockProvider>(context);
@@ -61,6 +66,10 @@ class ClockHome extends StatelessWidget {
                   }),
                 ),
               ),
+               Positioned.fill(
+                  child: CustomPaint(
+                painter: CenterPainter(),
+              )),
             ],
           ),
         ),
@@ -73,12 +82,18 @@ class ClockPainter extends CustomPainter {
   final ClockProvider clockProvider;
 
   int hour, minute, second;
-  ClockPainter({this.hour, this.minute, this.second, this.clockProvider});
+  ClockPainter(
+      {required this.hour,
+      required this.minute,
+      required this.second,
+      required this.clockProvider});
 
   @override
   Future<void> paint(Canvas canvas, Size size) async {
     ///to calculate coordinates for hour
-    List<Offset> hourCoordinates = List(13);
+    List<Offset> hourCoordinates = List.generate(13, (index) {
+      return Offset(0, 0);
+    });
 
     ///analog coordinates of hours in each minute
     Offset analogHourCoordinate;
@@ -86,21 +101,12 @@ class ClockPainter extends CustomPainter {
     analogHourCoordinate = Offset(30, 30);
 
     ///to calculate coordinate for seconds
-    List<Offset> secondCoordinates = List(60);
-
-    ///for rectangular border on 4 side of clock
-    for (double i = 0; i <= 20; i = i + 0.1) {
-      Paint borderLinePaint = Paint()
-        ..color = Color.fromRGBO(47, 47, 49, i > 0.5 ? i / (35 - i) : 1);
-
-      canvas.drawLine(
-          Offset(i, i), Offset(i, size.height - i), borderLinePaint);
-      canvas.drawLine(Offset(i, i), Offset(size.width - i, i), borderLinePaint);
-      canvas.drawLine(Offset(size.width - i, i),
-          Offset(size.width - i, size.height - i), borderLinePaint);
-      canvas.drawLine(Offset(i, size.height - i),
-          Offset(size.width - i, size.height - i), borderLinePaint);
-    }
+    List<Offset> secondCoordinates = List.generate(
+      60,
+      (index) {
+        return Offset(0, 0);
+      },
+    );
 
     for (int i = 1; i <= 12; i++) {
       if (i > 9) {
@@ -123,9 +129,9 @@ class ClockPainter extends CustomPainter {
       }
     }
 
-    Future.delayed(Duration(milliseconds: 0)).then((_) {
-      clockProvider.setHoursCoordinate = hourCoordinates;
-    });
+    Future(
+      () => clockProvider.setHoursCoordinate = hourCoordinates,
+    );
 
     if (hour >= 10 || hour == 1) {
       analogHourCoordinate = clockProvider.hoursCoordinate[hour] +
@@ -160,7 +166,8 @@ class ClockPainter extends CustomPainter {
             Offset(30, 30 + (50 - i) * (size.height - 60) / 10);
       }
     }
-    Future.delayed(Duration(milliseconds: 0)).then((_) {
+
+    Future(() {
       clockProvider.setSecondsCoordinate = secondCoordinates;
       clockProvider.setMinutesCoordinate = secondCoordinates;
     });
@@ -180,7 +187,7 @@ class ClockPainter extends CustomPainter {
     m1 = 5;
     m2 = 2;
 
-    Offset minuteEndCoordinate;
+    late Offset minuteEndCoordinate;
     if (clockProvider.minutesCoordinate[minute] != null)
       minuteEndCoordinate = Offset(
           (m1 * clockProvider.minutesCoordinate[minute].dx +
@@ -193,7 +200,7 @@ class ClockPainter extends CustomPainter {
     ///for second
     m1 = 5;
     m2 = 1;
-    Offset secondEndCoordinate;
+    late Offset secondEndCoordinate;
     if (clockProvider.secondsCoordinate[second] != null)
       secondEndCoordinate = Offset(
           (m1 * clockProvider.secondsCoordinate[second].dx +
@@ -204,7 +211,7 @@ class ClockPainter extends CustomPainter {
               (m1 + m2));
 
     ///paint  second dots
-    List<Offset> secondTowardCenterCoordinate = List(60);
+    List secondTowardCenterCoordinate = List.generate(60, (index) {});
     Paint secondDotsPaint = Paint()
       ..color = Color.fromRGBO(15, 157, 88, 1)
       ..strokeCap = StrokeCap.round
@@ -227,7 +234,7 @@ class ClockPainter extends CustomPainter {
         Paint()..color = Color.fromRGBO(15, 157, 88, 1));
 
     ///paint hour dots
-    List<Offset> hourTowardCenterCoordinate = List(13);
+    List hourTowardCenterCoordinate = List.generate(13, (index) {});
     Paint hourDotsPaint = Paint()
       ..color = Color.fromRGBO(244, 160, 0, 1)
       ..strokeCap = StrokeCap.round
@@ -263,9 +270,9 @@ class ClockPainter extends CustomPainter {
       ..strokeCap = StrokeCap.round
       ..isAntiAlias = true
       ..style = PaintingStyle.fill;
-    if (minuteEndCoordinate != null)
-      canvas.drawLine(minuteEndCoordinate,
-          Offset(size.width / 2, size.height / 2), minutePaint);
+    // if (minuteEndCoordinate != null)
+    canvas.drawLine(minuteEndCoordinate,
+        Offset(size.width / 2, size.height / 2), minutePaint);
 
     ///second
     Paint secondPaint = Paint()
@@ -274,11 +281,46 @@ class ClockPainter extends CustomPainter {
       ..strokeCap = StrokeCap.round
       ..isAntiAlias = true
       ..style = PaintingStyle.fill;
-    if (secondEndCoordinate != null)
-      canvas.drawLine(secondEndCoordinate,
-          Offset(size.width / 2, size.height / 2), secondPaint);
+    // if (secondEndCoordinate != null)
+    canvas.drawLine(secondEndCoordinate,
+        Offset(size.width / 2, size.height / 2), secondPaint);
 
-    ///center of clock
+    // /center of clock
+  }
+
+  @override
+  bool shouldRepaint(CustomPainter oldDelegate) {
+    return true;
+  }
+}
+
+class FramePainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    ///for rectangular border on 4 side of clock
+    for (double i = 0; i <= 20; i = i + 0.1) {
+      Paint borderLinePaint = Paint()
+        ..color = Color.fromRGBO(47, 47, 49, i > 0.5 ? i / (35 - i) : 1);
+
+      canvas.drawLine(
+          Offset(i, i), Offset(i, size.height - i), borderLinePaint);
+      canvas.drawLine(Offset(i, i), Offset(size.width - i, i), borderLinePaint);
+      canvas.drawLine(Offset(size.width - i, i),
+          Offset(size.width - i, size.height - i), borderLinePaint);
+      canvas.drawLine(Offset(i, size.height - i),
+          Offset(size.width - i, size.height - i), borderLinePaint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) {
+    return false;
+  }
+}
+
+class CenterPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
     for (double i = 0; i <= 10; i = i + 1) {
       Paint centerClockPaint = Paint()
         ..color = Color.fromRGBO(219, 68, 55, i * i * i);
@@ -289,7 +331,19 @@ class ClockPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(CustomPainter oldDelegate) {
-    return true;
+  bool shouldRepaint(covariant CustomPainter oldDelegate) {
+    return false;
+  }
+}
+
+class DialBarsPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    // TODO: implement paint
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) {
+    return false;
   }
 }

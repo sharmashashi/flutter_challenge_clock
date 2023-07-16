@@ -8,9 +8,9 @@ class ClockProvider with ChangeNotifier {
   bool _hasInit = false;
 
   ///coordinates for seconds minutes and hours
-  List<Offset> _secondsCoordinate = List<Offset>(60);
-  List<Offset> _minutesCoordinate = List<Offset>(60);
-  List<Offset> _hoursCoordinate = List<Offset>(12);
+  List _secondsCoordinate = List.generate(60, (index) {});
+  List _minutesCoordinate = List.generate(60, (index) {});
+  List _hoursCoordinate = List.generate(12, (index) {});
 
   get hour => _hour;
   get minute => _minute;
